@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Belajar Bahasa Jepang 🇯🇵
 
-## Getting Started
+Aplikasi kuis bahasa Jepang interaktif berbasis AI. Soal dibuat otomatis oleh Groq (Llama) atau Gemma, mencakup Hiragana, Katakana, Kanji, dan Kosakata.
 
-First, run the development server:
+## Fitur
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **4 Kategori**: Hiragana, Katakana, Kanji (level JLPT N5–N1), Kosakata
+- **4 Format Soal**:
+  - **Ketik** — jawab dengan mengetik (konversi romaji → kana otomatis via Wanakana)
+  - **Pilihan Ganda** — pilih jawaban dari 4 opsi
+  - **Bicara** — jawab dengan suara (Web Speech API) **atau ketik**, bisa dilewati
+  - **Menyimak** — dengarkan audio TTS lalu ketik jawaban
+- **Tingkat Kesulitan**: Easy (Gojuon), Normal (dakuten/yoon), Hard (kalimat), Infinity (soal tak terbatas, auto-load di background)
+- **AI Dual-Provider**: Groq (Llama 3.3 70B) sebagai primer, Gemma (Google) sebagai fallback
+- **Furigana Ruby**: Kanji ditampilkan dengan furigana menggunakan tag HTML `<ruby>`
+- **Responsive**: Tailwind CSS, mobile-friendly
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (Turbopack)
+- **Bahasa**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Font**: Noto Sans JP + Geist
+- **Kana IME**: [Wanakana](https://github.com/wanakana/wanakana) (konversi romaji ↔ kana)
+- **Speech**: Web Speech API (SpeechRecognition + SpeechSynthesis)
+- **AI API**: Groq (Llama 3.3 70B) + Gemma (Google Gemini) sebagai fallback
+
+## Persiapan
+
+Buat file `.env` di root proyek:
+
+```env
+GROQ_API_KEY=gsk_...
+GEMINI_API_KEY=AIza...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Salah satu API key wajib diisi. Groq diprioritaskan, Gemma sebagai fallback jika Groq gagal.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Memulai
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Buka [http://localhost:3000](http://localhost:3000).
 
-To learn more about Next.js, take a look at the following resources:
+## Struktur Proyek
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+├── api/quiz/route.ts       # API route — generate soal via Groq/Gemma
+├── quiz/
+│   ├── page.tsx            # Halaman kuis (server)
+│   └── QuizClient.tsx      # State & flow kuis (client)
+├── components/
+│   ├── quiz/
+│   │   ├── QuestionCard.tsx # Card soal — handle semua format input
+│   │   └── KanaInput.tsx    # Input teks dengan konversi kana otomatis
+│   └── ui/
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       └── ProgressBar.tsx
+├── lib/
+│   ├── quiz/
+│   │   ├── types.ts        # Tipe data (Category, Question, QuestionFormat, dll)
+│   │   ├── prompt.ts       # Prompt builder untuk AI
+│   │   ├── check.ts        # Validasi jawaban (dengan toleransi romaji/kana)
+│   │   ├── validate.ts     # Parse & validasi JSON dari AI
+│   │   └── ruby.tsx        # Render furigana HTML ruby
+│   └── speech/
+│       ├── tts.ts           # Text-to-speech Jepang
+│       └── useSpeechRecognition.ts # Hook speech recognition
+├── pages/Home.tsx           # Halaman beranda
+├── layout.tsx               # Root layout + font loading
+└── globals.css              # Tailwind + custom style
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Build
 
-## Deploy on Vercel
+```bash
+npm run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Lisensi
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Proyek pribadi — bebas dimodifikasi.
