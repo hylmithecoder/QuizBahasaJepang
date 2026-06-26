@@ -1,5 +1,6 @@
 import {
   isHiragana,
+  isKana,
   isKatakana,
   isRomaji,
   toHiragana,
@@ -34,15 +35,34 @@ function deriveInputMode(answer: string, fallback: InputMode): InputMode {
   return fallback === "none" ? "romaji" : fallback;
 }
 
+// Particles は/へ/を are pronounced wa/e/o, but wanakana romanizes them ha/he/wo
+// (it has no particle awareness). We add a particle-phonetic romaji variant ALONGSIDE
+// the raw one so the learner's answer matches whichever spelling they type. The "wrong"
+// variant for a word-internal kana (e.g. はな → wana) is never typed, so it stays harmless.
+const PARTICLE_KANA: Record<string, string> = { "は": "わ", "へ": "え", "を": "お" };
+
+function particleAwareKana(kana: string): string {
+  return kana.replace(/[はへを]/g, (ch) => PARTICLE_KANA[ch] ?? ch);
+}
+
+function romajiVariants(kana: string): string[] {
+  return dedupe([toRomaji(kana), toRomaji(particleAwareKana(kana))]);
+}
+
 /** Auto-extend acceptable answers with romaji/kana equivalents so checking is robust. */
 function buildAcceptable(answer: string, given: unknown): string[] {
   const list = Array.isArray(given) ? given.map(str) : [];
   const out = [answer, ...list];
-  if (isHiragana(answer) || isKatakana(answer)) {
-    out.push(toRomaji(answer));
-  }
-  if (isRomaji(answer)) {
-    out.push(toHiragana(answer), toKatakana(answer));
+  if (isKana(answer)) {
+    // Covers pure hiragana, pure katakana, and mixed-kana words/sentences.
+    out.push(...romajiVariants(answer));
+  } else if (isRomaji(answer)) {
+    // Only add kana forms for clean readings (e.g. "su" → す), not meaning/phrase
+    // answers like "hamburger" which would convert to garbage kana ("はmぶrげr").
+    const hira = toHiragana(answer);
+    const kata = toKatakana(answer);
+    if (isKana(hira)) out.push(hira);
+    if (isKana(kata)) out.push(kata);
   }
   return dedupe(out);
 }

@@ -7,7 +7,6 @@ import {
   CATEGORY_LABELS,
   JLPT_LEVELS,
   type Category,
-  type JlptLevel,
   type Question,
 } from "@/app/lib/quiz/types";
 import { QuestionCard } from "@/app/components/quiz/QuestionCard";

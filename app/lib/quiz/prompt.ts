@@ -23,7 +23,7 @@ function getCategoryGuide(category: Category, level: string): string {
   if (level === "easy") {
     const examples = isHiragana ? "あ, い, う, え, お, か" : "ア, イ, ウ, エ, オ, カ";
     const wordExamples = isHiragana
-      ? "あお (biru), あか (merah), いぬ (anjing), うmi (laut), かさ (payung)"
+      ? "あお (biru), あか (merah), いぬ (anjing), うみ (laut), かさ (payung)"
       : "アオ (biru), アカ (merah), イヌ (anjing), ウミ (laut), カサ (payung)";
     return `Kuis tingkat EASY fokus pada karakter dasar ${kana} tunggal (Gojuon, contoh: ${examples}) ATAU kosakata sederhana terdiri dari 2-4 karakter dasar yang HANYA tersusun dari karakter dasar tersebut (contoh: ${wordExamples}). JANGAN gunakan dakuten (dakuon seperti が, ば), handakuten (ぱ), yoon (suku kata kecil seperti きゃ), atau kata panjang (chouon). Buat variasi soal yang acak, jangan berurutan monoton (seperti 'a, i, u, e, o'). ${categoryRestriction}`;
   } else if (level === "normal") {
@@ -112,8 +112,8 @@ const HIRAGANA_HARD_EXAMPLE = `{
   "questions": [
     { "category": "hiragana", "format": "typing", "instruction": "Ketik cara baca/salinan kalimat berikut dalam aksara hiragana:", "promptText": "これは<ruby>本<rt>ほん</rt></ruby>です。", "answer": "これはほんです", "acceptableAnswers": ["これはほんです", "kore wa hon desu"], "inputMode": "hiragana", "explanation": "これは本です (kore wa hon desu) berarti 'Ini adalah buku'. Partikel は dibaca 'wa' karena merupakan penanda topik." },
     { "category": "hiragana", "format": "multiple-choice", "instruction": "Pilih arti yang benar untuk kalimat berikut:", "promptText": "おげんきですか？", "options": ["Apa kabar?", "Selamat pagi", "Sampai jumpa lagi", "Terima kasih banyak"], "answer": "Apa kabar?", "acceptableAnswers": ["Apa kabar?"], "inputMode": "none", "explanation": "おげんきですか (o genki desu ka) berarti 'Apa kabar?'." },
-    { "category": "hiragana", "format": "listening", "instruction": "Dengarkan audio, lalu ketik kalimatnya dalam aksara hiragana:", "promptText": "", "answer": "わたしはねcoがすきです", "acceptableAnswers": ["わたしはねこがすきです", "watashi wa neko ga suki desu"], "audioText": "わたしはねこがすきes", "inputMode": "hiragana", "explanation": "Kalimatnya adalah わたしはねこがすきです (watashi wa neko ga suki desu) yang artinya 'Saya suka kucing'. Partikel は dibaca 'wa', dan partikel が menandakan objek yang disukai." },
-    { "category": "hiragana", "format": "speaking", "instruction": "Ucapkan kalimat berikut dengan lantang:", "promptText": "わたしはがくせいです", "answer": "わたしはがくせいです", "acceptableAnswers": ["わたしはがくせいです", "watashi wa gakusei desu"], "audioText": "わたしはgぁくせいです", "inputMode": "none", "explanation": "わたしはgあくせいです (watashi wa gakusei desu) berarti 'Saya adalah siswa'. Partikel は dibaca 'wa'." }
+    { "category": "hiragana", "format": "listening", "instruction": "Dengarkan audio, lalu ketik kalimatnya dalam aksara hiragana:", "promptText": "", "answer": "わたしはねこがすきです", "acceptableAnswers": ["わたしはねこがすきです", "watashi wa neko ga suki desu"], "audioText": "わたしはねこがすきです", "inputMode": "hiragana", "explanation": "Kalimatnya adalah わたしはねこがすきです (watashi wa neko ga suki desu) yang artinya 'Saya suka kucing'. Partikel は dibaca 'wa', dan partikel が menandakan objek yang disukai." },
+    { "category": "hiragana", "format": "speaking", "instruction": "Ucapkan kalimat berikut dengan lantang:", "promptText": "わたしはがくせいです", "answer": "わたしはがくせいです", "acceptableAnswers": ["わたしはがくせいです", "watashi wa gakusei desu"], "audioText": "わたしはがくせいです", "inputMode": "none", "explanation": "わたしはがくせいです (watashi wa gakusei desu) berarti 'Saya adalah siswa'. Partikel は dibaca 'wa'." }
   ]
 }`;
 
@@ -140,7 +140,7 @@ const KATAKANA_HARD_EXAMPLE = `{
     { "category": "katakana", "format": "typing", "instruction": "Ketik cara baca/salinan kalimat berikut dalam aksara katakana/hiragana:", "promptText": "<ruby>珈琲<rt>こーひー</rt></ruby>をのみます。", "answer": "こーひーをのみます", "acceptableAnswers": ["こーひーをのみます", "koohii o nomimasu"], "inputMode": "hiragana", "explanation": "コーヒーをのみます (koohii o nomimasu) berarti 'Minum kopi'. Partikel を dibaca 'o' penunjuk objek." },
     { "category": "katakana", "format": "multiple-choice", "instruction": "Pilih arti yang benar untuk kalimat berikut:", "promptText": "あしたはデパートにいきます。", "options": ["Besok pergi ke department store", "Hari ini menonton TV", "Saya minum kopi hangat", "Kemarin berbelanja"], "answer": "Besok pergi ke department store", "acceptableAnswers": ["Besok pergi ke department store"], "inputMode": "none", "explanation": "あしたはデパートにいきます (ashita wa depaato ni ikimasu) berarti 'Besok pergi ke department store'. Partikel は dibaca 'wa', partikel に penunjuk arah." },
     { "category": "katakana", "format": "listening", "instruction": "Dengarkan audio, lalu ketik kalimatnya dalam aksara katakana/hiragana:", "promptText": "", "answer": "てれびをみます", "acceptableAnswers": ["てれびをみます", "terebi o mimasu"], "audioText": "てれびをみます", "inputMode": "hiragana", "explanation": "Kalimat yang diucapkan adalah テレビをみます (terebi o mimasu) yang berarti 'menonton televisi'. Partikel を dibaca 'o'." },
-    { "category": "katakana", "format": "speaking", "instruction": "Ucapkan kalimat berikut dengan lantang:", "promptText": "かめらdeしゃしんをとります", "answer": "かめらでしゃしんをとります", "acceptableAnswers": ["かめらでしゃしんをとります", "カメラで写真をとります"], "audioText": "かめらでしゃしんをとります", "inputMode": "none", "explanation": "カメラでしゃしんをとります (kamera de shashin o torimasu) berarti 'mengambil foto dengan kamera'. Partikel で berarti 'dengan/menggunakan', partikel を dibaca 'o'." }
+    { "category": "katakana", "format": "speaking", "instruction": "Ucapkan kalimat berikut dengan lantang:", "promptText": "かめらでしゃしんをとります", "answer": "かめらでしゃしんをとります", "acceptableAnswers": ["かめらでしゃしんをとります", "カメラで写真をとります"], "audioText": "かめらでしゃしんをとります", "inputMode": "none", "explanation": "カメラでしゃしんをとります (kamera de shashin o torimasu) berarti 'mengambil foto dengan kamera'. Partikel で berarti 'dengan/menggunakan', partikel を dibaca 'o'." }
   ]
 }`;
 
@@ -200,7 +200,7 @@ export function buildGroqMessages(req: QuizRequest) {
     promptTextRule,
     "- Romaji selalu huruf kecil dengan ejaan Hepburn (mis. shi, chi, tsu, fu).",
     '- "format" harus salah satu dari: "typing", "multiple-choice", "speaking", "listening".',
-    '- "inputMode" harus salah one of: "hiragana", "katakana", "romaji", "none".',
+    '- "inputMode" harus salah satu dari: "hiragana", "katakana", "romaji", "none".',
     "- Untuk multiple-choice: WAJIB tepat 4 opsi yang berbeda dan salah satunya adalah jawaban benar.",
     "- Jangan mengulang soal yang sama. Variasikan karakter/kata/kalimat.",
     "",

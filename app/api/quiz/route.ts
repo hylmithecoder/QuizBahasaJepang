@@ -1,6 +1,11 @@
 import { buildGroqMessages } from "@/app/lib/quiz/prompt";
 import { parseAndNormalize } from "@/app/lib/quiz/validate";
-import type { Category, JlptLevel, QuizRequest } from "@/app/lib/quiz/types";
+import type {
+  Category,
+  HiraganaKatakanaLevel,
+  JlptLevel,
+  QuizRequest,
+} from "@/app/lib/quiz/types";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
@@ -8,9 +13,15 @@ const GROQ_MODEL = "llama-3.3-70b-versatile";
 const CATEGORIES: Category[] = ["hiragana", "katakana", "kanji", "vocabulary"];
 const LEVELS: JlptLevel[] = ["N5", "N4", "N3", "N2", "N1"];
 
-async function callGroq(category: Category, level: any, count: number, apiKey: string): Promise<string> {
+type QuizLevel = JlptLevel | HiraganaKatakanaLevel;
+
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+async function callGroq(category: Category, level: QuizLevel, count: number, apiKey: string): Promise<string> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   try {
     const res = await fetch(GROQ_URL, {
@@ -40,16 +51,16 @@ async function callGroq(category: Category, level: any, count: number, apiKey: s
       throw new Error("Respons dari Groq kosong.");
     }
     return content;
-  } catch (err: any) {
+  } catch (err) {
     clearTimeout(timeoutId);
-    if (err.name === "AbortError") {
-      throw new Error("Koneksi Groq timeout (melebihi 3.5 detik).");
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Koneksi Groq timeout (melebihi 30 detik).");
     }
     throw err;
   }
 }
 
-async function callGemma(category: Category, level: any, count: number, apiKey: string): Promise<string> {
+async function callGemma(category: Category, level: QuizLevel, count: number, apiKey: string): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=${apiKey}`;
 
   const messages = buildGroqMessages({ category, level, count });
@@ -82,10 +93,11 @@ async function callGemma(category: Category, level: any, count: number, apiKey: 
   }
 
   const data = await res.json();
-  const parts = data?.candidates?.[0]?.content?.parts || [];
+  const parts: Array<{ text?: string; thought?: boolean }> =
+    data?.candidates?.[0]?.content?.parts ?? [];
   // Model Gemma dapat mengembalikan pemikiran/reasoning pada part berlabel thought: true.
   // Kita cari part yang tidak memiliki thought: true untuk mendapatkan JSON bersih.
-  const contentPart = parts.find((p: any) => !p.thought);
+  const contentPart = parts.find((p) => !p.thought);
   const content = contentPart?.text;
   if (typeof content !== "string" || !content.trim()) {
     throw new Error("Respons dari Gemma kosong.");
@@ -105,12 +117,14 @@ export async function POST(request: Request) {
     ? (body.category as Category)
     : "hiragana";
 
-  let level: any;
+  let level: QuizLevel;
   if (category === "kanji") {
     level = LEVELS.includes(body.level as JlptLevel) ? (body.level as JlptLevel) : "N5";
   } else {
     const validLevels = ["easy", "normal", "hard", "infinity"];
-    level = validLevels.includes(body.level as string) ? body.level : "easy";
+    level = validLevels.includes(body.level as string)
+      ? (body.level as HiraganaKatakanaLevel)
+      : "easy";
   }
   const count = Math.min(Math.max(Math.round(Number(body.count) || 10), 3), 20);
 
@@ -126,9 +140,10 @@ export async function POST(request: Request) {
     try {
       content = await callGroq(category, level, count, groqKey);
       usedModel = "Groq (Llama)";
-    } catch (groqErr: any) {
-      console.warn("Groq request failed, trying Gemma fallback...", groqErr.message);
-      errorMsg += `Groq error: ${groqErr.message}. `;
+    } catch (groqErr) {
+      const msg = errorMessage(groqErr);
+      console.warn("Groq request failed, trying Gemma fallback...", msg);
+      errorMsg += `Groq error: ${msg}. `;
     }
   } else {
     errorMsg += "GROQ_API_KEY belum diatur. ";
@@ -139,9 +154,10 @@ export async function POST(request: Request) {
     try {
       content = await callGemma(category, level, count, geminiKey);
       usedModel = "Gemma";
-    } catch (gemmaErr: any) {
-      console.error("Gemma fallback also failed", gemmaErr.message);
-      errorMsg += `Gemma error: ${gemmaErr.message}. `;
+    } catch (gemmaErr) {
+      const msg = errorMessage(gemmaErr);
+      console.error("Gemma fallback also failed", msg);
+      errorMsg += `Gemma error: ${msg}. `;
     }
   } else if (!content) {
     errorMsg += "GEMINI_API_KEY belum diatur. ";
@@ -159,7 +175,7 @@ export async function POST(request: Request) {
     const questions = parseAndNormalize(content, category);
     console.log(`Successfully generated ${questions.length} questions using ${usedModel}`);
     return Response.json({ questions });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Failed parsing generated questions", err);
     return Response.json(
       { error: `Gagal memproses hasil dari ${usedModel}. Silakan coba lagi.` },
